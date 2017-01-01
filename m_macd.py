@@ -4,7 +4,7 @@ from prettytable import PrettyTable
 '''
 一个测试与验证MACD在选股与判断大势方面作用的策略。
 '''
-
+# this is test by lgy
 
 def initialize(context):
     g.buy_stock_count = 10  # 最大买入股票数
