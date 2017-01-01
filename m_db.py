@@ -3,14 +3,22 @@ pymysql.install_as_MySQLdb()
 import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
+import configparser
+
 
 class m_db2:
     cur = ''
     sqlconn =''
     engine = ''
     def __init__(self):
-        self.engine = create_engine('mysql://root:root@127.0.0.1/gupiao?charset=utf8')
-        self.sqlconn = pymysql.connect(host='localhost', port=3306,user='root',passwd='root',db='mysql',charset='UTF8')
+        cf = configparser.ConfigParser()
+        cf.read('stock.init')
+        usr = cf.get('db','db_user')
+        pwd = cf.get('db', 'db_pass')
+        # self.engine = create_engine('mysql://root:root@127.0.0.1/gupiao?charset=utf8')
+        # self.sqlconn = pymysql.connect(host='localhost', port=3306,user='root',passwd='root',db='mysql',charset='UTF8')
+        self.engine = create_engine('mysql://'+usr+':'+pwd+'@127.0.0.1/gupiao?charset=utf8')
+        self.sqlconn = pymysql.connect(host='localhost', port=3306,user=usr,passwd=pwd,db='mysql',charset='UTF8')
         self.cur = self.sqlconn.cursor()
         self.cur.execute("use gupiao;")
         # cur.execute("select * from t_stick_data_w where code ='002349';")

@@ -7,14 +7,22 @@ import time
 import datetime
 from m_db import m_db2
 #from ConfigParser import SafeConfigParser
+import configparser
+
 class load:
     engine =''
     sqlconn =''
     cur =''
     db = ''
     def __init__(self):
-        self.engine = create_engine('mysql://root:root@127.0.0.1/gupiao?charset=utf8')
-        self.sqlconn = pymysql.connect(host='localhost', port=3306,user='root',passwd='root',db='mysql',charset='UTF8')
+        cf = configparser.ConfigParser()
+        cf.read('stock.init')
+        usr = cf.get('db','db_user')
+        pwd = cf.get('db', 'db_pass')
+        # self.engine = create_engine('mysql://root:root@127.0.0.1/gupiao?charset=utf8')
+        # self.sqlconn = pymysql.connect(host='localhost', port=3306,user='root',passwd='root',db='mysql',charset='UTF8')
+        self.engine = create_engine('mysql://'+usr+':'+pwd+'@127.0.0.1/gupiao?charset=utf8')
+        self.sqlconn = pymysql.connect(host='localhost', port=3306,user=usr,passwd=pwd,db='mysql',charset='UTF8')
         self.cur = self.sqlconn.cursor()
         self.cur.execute("use gupiao;")
         self.db = m_db2()
@@ -141,4 +149,9 @@ class load:
 # rs = ts.get_k_data(code='600848', start='2016-06-01', end='2017-01-01', ktype='w')
 # print(rs)
 
+cf = configparser.ConfigParser()
+cf.read('stock.init')
+usr = cf.get('db','db_user')
+pwd = cf.get('db', 'db_pass')
+print(usr,pwd)
 
