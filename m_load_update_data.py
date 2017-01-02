@@ -16,7 +16,7 @@ class load:
     db = ''
     def __init__(self):
         cf = configparser.ConfigParser()
-        cf.read('stock.init')
+        cf.read('/home/lgy/PycharmProjects/Stock/stock.init')
         usr = cf.get('db','db_user')
         pwd = cf.get('db', 'db_pass')
         # self.engine = create_engine('mysql://root:root@127.0.0.1/gupiao?charset=utf8')
@@ -149,9 +149,9 @@ class load:
 # rs = ts.get_k_data(code='600848', start='2016-06-01', end='2017-01-01', ktype='w')
 # print(rs)
 
-cf = configparser.ConfigParser()
-cf.read('stock.init')
-usr = cf.get('db','db_user')
-pwd = cf.get('db', 'db_pass')
-print(usr,pwd)
+# cf = configparser.ConfigParser()
+# cf.read('stock.init')
+# usr = cf.get('db','db_user')
+# pwd = cf.get('db', 'db_pass')
+# print(usr,pwd)
 

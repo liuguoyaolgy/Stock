@@ -12,7 +12,7 @@ class m_db2:
     engine = ''
     def __init__(self):
         cf = configparser.ConfigParser()
-        cf.read('stock.init')
+        cf.read('/home/lgy/PycharmProjects/Stock/stock.init')
         usr = cf.get('db','db_user')
         pwd = cf.get('db', 'db_pass')
         # self.engine = create_engine('mysql://root:root@127.0.0.1/gupiao?charset=utf8')
