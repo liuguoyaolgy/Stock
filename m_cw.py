@@ -1,9 +1,6 @@
 
 import configparser
 
-class cw():
-    a = ''
-    b = ''
 
 class cw_dsp():
     def __init__(self):
@@ -104,19 +101,19 @@ def cw_print():
         strstr +=''+  str(cww.C[i-1].code) +'\t'+ str(cww.C[i-1].bishu)+'\t\t'+ str(cww.C[i-1].buyamt)+'\t'+ str(cww.C[i-1].buyprice)+'\n'
         print(cww.C[i-1].code,cww.C[i-1].bishu,cww.C[i-1].buyamt,cww.C[i-1].buyprice)
     return  strstr
-cw_read()
-cw_print()
-buy('000222',19,0.33)
-buy('000220',18,0.33)
-buy('000221',17,0.33)
-cw_print()
-cw_save()
-sale('000222',18,0.5)
-sale('000220',17,0.5)
-sale('000221',16,1)
-
-cw_print()
-cw_save()
+# cw_read()
+# cw_print()
+# buy('000222',19,0.33)
+# buy('000220',18,0.33)
+# buy('000221',17,0.33)
+# cw_print()
+# cw_save()
+# sale('000222',18,0.5)
+# sale('000220',17,0.5)
+# sale('000221',16,1)
+#
+# cw_print()
+# cw_save()
 
 #卖出
 

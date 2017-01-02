@@ -99,6 +99,22 @@ class m_db2:
         except Exception as e:
             print('Err:', e)
         return df
+    def getlittlestock(self,date):
+        df = ''
+        try:
+            sqlstr="select * from ( \
+                select a.code,pe,totals,b.close,b.close*a.totals as totprice \
+                from t_all_stickcode a  \
+                , t_stick_data_d b \
+                where  b.date ='"+date+"' and a.code=b.code \
+                and pe>5 and pe<200 and b.close*a.totals  < 100) c \
+                order by c.totprice asc"
+            print(sqlstr)
+            self.cur.execute(sqlstr)
+            df = pd.DataFrame(np.array(self.cur.fetchall()), columns=['code', 'pe', 'totals','close','totprice'])
+        except Exception as e:
+            print('Err:', e)
+        return df
 # xx=m_db2();
 # df=xx.get_test()
 # xx.insert_data('t_stick_data_m_test',df.head(20).as_matrix())
