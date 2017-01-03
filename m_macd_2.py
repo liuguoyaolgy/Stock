@@ -14,6 +14,16 @@ class g():
     b = ''
     c = []
 
+#************
+#1.macd 三天是红，第三根是第一根的>4/3倍
+#2.0轴上第一个金叉 buy
+#3.0轴上第二个金叉买 buy
+#
+#
+#
+#**************
+
+
 def data_complete():
     # 补全day历史数据
     ld = load()
@@ -48,7 +58,8 @@ def pre_data(stick_code,ktype='D'):
 def run():
     #601999
     #600485
-    code = '601011'
+    #601011
+    code = '002716'
     df = pre_data(code, ktype='D')
     for icnt in range(30,len(df)):
         #sale
@@ -101,11 +112,14 @@ def in20DhszshHasSaleFlag(df,daycnt):
     return 0
 #diff连续三天升高
 def diffup3days(df,daycnt):
-    if df.loc[daycnt]['diff'] > df.loc[daycnt-1]['diff'] and df.loc[daycnt-1]['diff']>df.loc[daycnt-2]['diff']:
+    if df.loc[daycnt]['diff'] > df.loc[daycnt-1]['diff'] and df.loc[daycnt-1]['diff']>df.loc[daycnt-2]['diff'] \
+            and df.loc[daycnt]['diff'] > 5 * df.loc[daycnt - 2]['diff'] / 3:
         return 1
     return 0
 def diffdown3days(df,daycnt):
-    if df.loc[daycnt]['diff'] < df.loc[daycnt-1]['diff'] and df.loc[daycnt-1]['diff']<df.loc[daycnt-2]['diff']:
+    if df.loc[daycnt]['diff'] < df.loc[daycnt-1]['diff'] \
+            and df.loc[daycnt-1]['diff']<df.loc[daycnt-2]['diff']:
+         #   and df.loc[daycnt]['diff']>4*df.loc[daycnt-2]['diff']/3:
         return 1
     return 0
 #diff连续三天下降
