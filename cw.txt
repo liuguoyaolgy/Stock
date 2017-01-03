@@ -1,0 +1,14 @@
+[cw]
+stockcnt=2
+remainder_Amt=63100.0
+bili=0.99
+[cwdsp0]
+code=000222
+buyprice=19.0
+bishu=9
+buyamt=17100.0
+[cwdsp1]
+code=000220
+buyprice=18.0
+bishu=9
+buyamt=16200.0

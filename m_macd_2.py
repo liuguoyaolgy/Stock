@@ -7,6 +7,7 @@ import m_smtp
 import datetime
 import talib as ta
 from m_db import m_db2
+import m_cw
 
 class g():
     a = ''
@@ -44,9 +45,62 @@ def pre_data(stick_code,ktype='D'):
 # draw
 def run():
     df = pre_data('601999', ktype='D')
-
+    for icnt in range(30,len(df)):
+        #sale
+        if 1==in3dHasMacdSaleFlag(df,icnt-1) or 1==diffdown3days(df,icnt-1) or 1==in20DhszshHasSaleFlag(df,icnt-1):
+            m_cw.sale('601999', float(df.loc[icnt-1]['close']), 1)
+            print('S:')
+        #buy
+        if 1 == in3dHasMacdBuyFlag(df,icnt-1) and 1==diffup3days(df,icnt-1):
+            m_cw.buy('601999', float(df.loc[icnt-1]['close']), 1)
+            print('B')
     return
 
+#最近三天有金叉
+def in3dHasMacdBuyFlag(df,daycnt):
+    today = daycnt
+    yestoday = daycnt - 1
+    i_2DAgo = daycnt - 2
+    i_3DAgo = daycnt - 3
+    if daycnt < 30:
+        return 0
+    if df.loc[today]['diff']>df.loc[today]['dea'] and df.loc[yestoday]['diff']<df.loc[yestoday]['dea']:
+        return 1
+    if df.loc[yestoday]['diff'] > df.loc[yestoday]['dea'] and df.loc[i_2DAgo]['diff'] < df.loc[i_2DAgo]['dea']:
+        return 1
+    if df.loc[i_2DAgo]['diff'] > df.loc[i_2DAgo]['dea'] and df.loc[i_3DAgo]['diff'] < df.loc[i_3DAgo]['dea']:
+        return 1
+    return 0
+#最近三天死叉
+def in3dHasMacdSaleFlag(df,daycnt):
+    today = daycnt
+    yestoday = daycnt - 1
+    i_2DAgo = daycnt - 2
+    i_3DAgo = daycnt - 3
+    if daycnt < 30:
+        return 0
+    if df.loc[today]['diff']<df.loc[today]['dea'] and df.loc[yestoday]['diff']>df.loc[yestoday]['dea']:
+        return 1
+    if df.loc[yestoday]['diff'] < df.loc[yestoday]['dea'] and df.loc[i_2DAgo]['diff'] > df.loc[i_2DAgo]['dea']:
+        return 1
+    if df.loc[i_2DAgo]['diff'] < df.loc[i_2DAgo]['dea'] and df.loc[i_3DAgo]['diff'] > df.loc[i_3DAgo]['dea']:
+        return 1
+    return 0
+#大盘创20日新低
+def in20DhszshHasSaleFlag(df,daycnt):
+    if df.loc[daycnt]['close']<df.loc[daycnt-20]['close']:
+        return 1
+    return 0
+#diff连续三天升高
+def diffup3days(df,daycnt):
+    if df.loc[daycnt]['diff'] > df.loc[daycnt-1]['diff'] and df.loc[daycnt-1]['diff']>df.loc[daycnt-2]['diff']:
+        return 1
+    return 0
+def diffdown3days(df,daycnt):
+    if df.loc[daycnt]['diff'] < df.loc[daycnt-1]['diff'] and df.loc[daycnt-1]['diff']<df.loc[daycnt-2]['diff']:
+        return 1
+    return 0
+#diff连续三天下降
 db = m_db2()
 
 #补全历史数据 day
@@ -56,8 +110,9 @@ db = m_db2()
 #df = db.getlittlestock('2016-12-13')
 
 #买卖操作
+run()
 
-print(df)
+m_cw.cw_print()
 
 #打印仓位
 
