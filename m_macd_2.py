@@ -8,7 +8,7 @@ import datetime
 import talib as ta
 from m_db import m_db2
 import m_cw
-
+import matplotlib.pyplot as plt
 class g():
     a = ''
     b = ''
@@ -41,19 +41,27 @@ def pre_data(stick_code,ktype='D'):
     df['volma5']=ta.MA(df['vol'].values.astype('double'),5);
     df['volma20'] = ta.MA(df['vol'].values.astype('double'), 20);
     df['MA20'] = ta.MA(df['close'].values.astype('double'), 5)
+    df['cwbili']=0
+    df['pricebili']=0
     return  df
 # draw
 def run():
-    df = pre_data('601999', ktype='D')
+    #601999
+    #600485
+    code = '601011'
+    df = pre_data(code, ktype='D')
     for icnt in range(30,len(df)):
         #sale
         if 1==in3dHasMacdSaleFlag(df,icnt-1) or 1==diffdown3days(df,icnt-1) or 1==in20DhszshHasSaleFlag(df,icnt-1):
-            m_cw.sale('601999', float(df.loc[icnt-1]['close']), 1)
-            print('S:')
+            m_cw.sale(code, float(df.loc[icnt-1]['close']), 1)
+            print('S:',m_cw.allamt())
         #buy
         if 1 == in3dHasMacdBuyFlag(df,icnt-1) and 1==diffup3days(df,icnt-1):
-            m_cw.buy('601999', float(df.loc[icnt-1]['close']), 1)
+            m_cw.buy(code, float(df.loc[icnt-1]['close']), 1)
             print('B')
+        #用于画图
+        df.loc[icnt-1,['cwbili']]=m_cw.allamt()/100000.0
+        df.loc[icnt-1,['pricebili']]=float(df.loc[icnt-1]['close'])/float(df.loc[30]['close'])
     return
 
 #最近三天有金叉
@@ -113,7 +121,9 @@ db = m_db2()
 run()
 
 m_cw.cw_print()
-
+plt.plot(df.index,df['cwbili'])
+plt.plot(df.index,df['pricebili'])
+plt.show()
 #打印仓位
 
 
