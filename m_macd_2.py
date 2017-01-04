@@ -50,7 +50,8 @@ def pre_data(stick_code,ktype='D'):
     df['obv'] = ta.OBV(df['close'].values.astype('double'),df['vol'].values.astype('double'))
     df['volma5']=ta.MA(df['vol'].values.astype('double'),5);
     df['volma20'] = ta.MA(df['vol'].values.astype('double'), 20);
-    df['MA20'] = ta.MA(df['close'].values.astype('double'), 5)
+    df['MA20'] = ta.MA(df['close'].values.astype('double'), 20)
+    df['MA60'] = ta.MA(df['close'].values.astype('double'), 60)
     df['cwbili']=0
     df['pricebili']=0
     return  df
@@ -59,17 +60,19 @@ def run():
     #601999
     #600485
     #601011
-    code = '002716'
+    code = '600706'
     df = pre_data(code, ktype='D')
     for icnt in range(30,len(df)):
         #sale
-        if 1==in3dHasMacdSaleFlag(df,icnt-1) or 1==diffdown3days(df,icnt-1) or 1==in20DhszshHasSaleFlag(df,icnt-1):
+        if 1==in3dHasMacdSaleFlag(df,icnt-1) \
+                or 1==diffdown3days(df,icnt-1) \
+                or 1==in20DhszshHasSaleFlag(df,icnt-1):
             m_cw.sale(code, float(df.loc[icnt-1]['close']), 1)
-            print('S:',m_cw.allamt())
+            print('S:',df.loc[icnt-1]['date'],m_cw.allamt())
         #buy
-        if 1 == in3dHasMacdBuyFlag(df,icnt-1) and 1==diffup3days(df,icnt-1):
+        if 1 == in3dHasMacdBuyFlag(df,icnt-1) and 1==diffup3days(df,icnt-1) and 1==ma60up(df,icnt-1):
             m_cw.buy(code, float(df.loc[icnt-1]['close']), 1)
-            print('B')
+            print('B',df.loc[icnt-1]['date'])
         #用于画图
         df.loc[icnt-1,['cwbili']]=m_cw.allamt()/100000.0
         df.loc[icnt-1,['pricebili']]=float(df.loc[icnt-1]['close'])/float(df.loc[30]['close'])
@@ -107,22 +110,30 @@ def in3dHasMacdSaleFlag(df,daycnt):
     return 0
 #大盘创20日新低
 def in20DhszshHasSaleFlag(df,daycnt):
-    if df.loc[daycnt]['close']<df.loc[daycnt-20]['close']:
+    if float(df.loc[daycnt]['close'])< \
+        float(df[daycnt-20:daycnt]['close'].values.astype('double').min()):
         return 1
     return 0
 #diff连续三天升高
 def diffup3days(df,daycnt):
     if df.loc[daycnt]['diff'] > df.loc[daycnt-1]['diff'] and df.loc[daycnt-1]['diff']>df.loc[daycnt-2]['diff'] \
-            and df.loc[daycnt]['diff'] > 5 * df.loc[daycnt - 2]['diff'] / 3:
+            and df.loc[daycnt]['macd'] > 4 * df.loc[daycnt - 2]['macd'] / 3 and df.loc[daycnt - 2]['macd']>0:
         return 1
     return 0
+#diff连续三天下降
 def diffdown3days(df,daycnt):
     if df.loc[daycnt]['diff'] < df.loc[daycnt-1]['diff'] \
             and df.loc[daycnt-1]['diff']<df.loc[daycnt-2]['diff']:
          #   and df.loc[daycnt]['diff']>4*df.loc[daycnt-2]['diff']/3:
         return 1
     return 0
-#diff连续三天下降
+#60日线拐头向上
+def ma60up(df,daycnt):
+    if df.loc[daycnt]['MA60'] < df.loc[daycnt - 1]['MA60'] \
+            and df.loc[daycnt - 1]['MA60'] < df.loc[daycnt - 2]['MA60']:
+        return 1
+    return 0
+
 db = m_db2()
 
 #补全历史数据 day
@@ -139,6 +150,13 @@ plt.plot(df.index,df['cwbili'])
 plt.plot(df.index,df['pricebili'])
 plt.show()
 #打印仓位
+
+# code = '603800'
+# df = pre_data(code, ktype='D')
+# print(df[0:3]['close'])
+# print(df.loc[3]['close'])
+# print(df[0:3]['close'].values.astype('double').min())
+# print(float(df[0:3]['close'].values.astype('double').min()) >  float(df.loc[3]['close']))
 
 
 
