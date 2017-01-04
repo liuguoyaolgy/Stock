@@ -54,7 +54,7 @@ def pre_data(stick_code,ktype='D'):
     df['MA60'] = ta.MA(df['close'].values.astype('double'), 60)
     df['cwbili']=0
     df['pricebili']=0
-    return  df
+    return   df
 # draw
 def run():
     #601999
