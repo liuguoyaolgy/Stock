@@ -55,7 +55,7 @@ def mail_stock(strtime):
             strstr+=df.loc[ind]['code']+"\n"
     print(strstr)
     m_smtp.smtp_send(strstr)
-    m_smtp.smtp_send_test('weijin@cupdata.com.cn','jinwei1992','smtp.ym.163.com',strstr)
+    m_smtp.smtp_send_test('weijin@cupdata.com.cn','jinwei1992','smtp.ym.163.com', strstr)
 #run('2016-12-28')
 # run('')
 # mail_stock('')
