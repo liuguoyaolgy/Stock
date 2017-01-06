@@ -30,3 +30,31 @@ def smtp_send(context):
     # except smtplib.SMTPException:
     #     print("Error: 无法发送邮件")
     smtpObj.quit()
+def smtp_send_test(user,pwd,server,context):
+    sender = user
+    receiver = user
+    smtpserver = server
+    username = user
+    password = pwd
+
+    # 三个参数：第一个为文本内容，第二个 plain 设置文本格式，第三个 utf-8 设置编码
+    message = MIMEText(context, 'plain', 'utf-8')
+    message['Subject'] = Header('stock-week', 'utf-8').encode()
+    message['From'] = '<'+user+'>'
+    message['To'] = '<'+user+'>'
+
+
+    smtpObj = smtplib.SMTP()
+    smtpObj.connect(smtpserver)    # 25 为 SMTP 端口号
+    smtpObj.login(username,password)
+    smtpObj.sendmail(sender, [receiver], message.as_string())
+    print("邮件发送成功")
+    # try:
+    #     smtpObj = smtplib.SMTP()
+    #     smtpObj.connect(smtpserver)    # 25 为 SMTP 端口号
+    #     smtpObj.login(username,password)
+    #     smtpObj.sendmail(sender, receiver, message.as_string())
+    #     print("邮件发送成功")
+    # except smtplib.SMTPException:
+    #     print("Error: 无法发送邮件")
+    smtpObj.quit()
