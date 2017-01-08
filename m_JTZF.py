@@ -1,45 +1,35 @@
-import m_smtp
-import time
-import datetime
-from m_load_update_data import load
-
-from m_db import m_db2
 import tushare as ts
+from m_load_update_data import load
+import m_draw
+import matplotlib.pyplot as plt
+import string
+import m_smtp
+import datetime
 import talib as ta
+from m_db import m_db2
+import m_cw
+import matplotlib.pyplot as plt
+class g():
+    a = ''
+    b = ''
+    c = []
 
-def run(strtime):
-    #refresh database
-    if '' == strtime :
-        enddate = datetime.date.today()
-        begindate = datetime.date.today() - datetime.timedelta(days=13)
-    else :
-        enddate = datetime.datetime.strptime(strtime,'%Y-%m-%d')
-        begindate = enddate - datetime.timedelta(days=13)
+#************
+#1.macd 三天是红，第三根是第一根的>4/3倍
+#2.0轴上第一个金叉 buy
+#3.0轴上第二个金叉买 buy
+#
+#
+#
+#**************
 
-    buytype ="YES" # all stock :YES   part stock :NO
 
+def data_complete():
+    # 补全day历史数据
     ld = load()
-    ld.get_all_stick_inf()
-    ld.get_stick_hisdata_w(begindate.strftime('%Y-%m-%d'),enddate.strftime('%Y-%m-%d'),all=buytype)
+    # ld.get_stick_hisdata_d(begin_date='2014-01-01',end_date='2016-12-23')
+    ld.get_stick_hisdata_d(begin_date='2016-12-01', end_date='2016-12-23')
 
-    #get can buy code
-    sqlrs = get_canBuy_code(buytype)
-    for code in sqlrs:
-        # print('pre_data:',code[0])
-        df = pre_data(code[0],'W')
-        control(df)
-    print('======================show======================')
-    df = show_canbuy_code(enddate.strftime('%Y-%m-%d'))
-    print(df)
-def get_canBuy_code(type):
-    db = m_db2()
-    if type == 'YES':
-        db.cur.execute("select code,outstanding from t_all_stickcode where outstanding <  50000 \
-                   and (substr(code,1,1)='0' or substr(code,1,1)='6'); ")
-    else:
-        db.cur.execute("select code,outstanding from t_all_stickcode ;")
-    sqlrs = db.cur.fetchall()
-    return sqlrs
 def pre_data(stick_code,ktype='D'):
     # ktype in ('D','W','M')
     global df
@@ -60,56 +50,91 @@ def pre_data(stick_code,ktype='D'):
     df['obv'] = ta.OBV(df['close'].values.astype('double'),df['vol'].values.astype('double'))
     df['volma5']=ta.MA(df['vol'].values.astype('double'),5);
     df['volma20'] = ta.MA(df['vol'].values.astype('double'), 20);
-    df['MA20'] = ta.MA(df['close'].values.astype('double'), 5)
-
-    #print(df)
-    #i= ta.CDLCONCEALBABYSWALL(df['open'].values.astype('double'),df['high'].values.astype('double'),
-    #                       df['low'].values.astype('double'),df['close'].values.astype('double'),)
-    #print(i)
-    return  df
-def control(df):
-    db = m_db2()
-    if df is None:
-        print('is none')
-        return
-    try:
-        lendf = len(df)
-        if lendf > 2 and float(df.loc[lendf-1]['vol'])>1.4*float(df.loc[lendf-2]['vol'])\
-            and float(df.loc[lendf - 2]['open']) > float(df.loc[lendf-1]['close']) \
-            and float(df.loc[lendf-1]['close']) > float(df.loc[lendf-1]['open']) \
-            and float(df.loc[lendf-1]['open']) > float(df.loc[lendf - 2]['close']):
-            print('can buy:',df.loc[lendf-1]['code'])
-            try:
-                print("insert ;;;;;;;;;;;;;;;;;;;;;;;;;;",df.loc[lendf-1]['date'],df.loc[lendf-1]['code'])
-                db.insert_can_buy_code(df.loc[lendf-1]['date'],df.loc[lendf-1]['code'],'1')
-                db.commit()
-            except Exception as e:
-                print('ERR:',e)
-    except Exception as e:
-        pre_data('err:',e)
+    df['MA20'] = ta.MA(df['close'].values.astype('double'), 20)
+    df['MA60'] = ta.MA(df['close'].values.astype('double'), 60)
+    df['cwbili']=0
+    df['pricebili']=0
+    return   df
+# draw
+def run():
+    #601999
+    #600485
+    #601011
+    code = '600706'
+    df = pre_data(code, ktype='D')
+    for icnt in range(30,len(df)):
+        #sale
+        if 1==in3dHasMacdSaleFlag(df,icnt-1) \
+                or 1==diffdown3days(df,icnt-1) \
+                or 1==in20DhszshHasSaleFlag(df,icnt-1):
+            m_cw.sale(code, float(df.loc[icnt-1]['close']), 1)
+            print('S:',df.loc[icnt-1]['date'],m_cw.allamt())
+        #buy
+        if 1 == in3dHasMacdBuyFlag(df,icnt-1) and 1==diffup3days(df,icnt-1) and 1==ma60up(df,icnt-1):
+            m_cw.buy(code, float(df.loc[icnt-1]['close']), 1)
+            print('B',df.loc[icnt-1]['date'])
+        #用于画图
+        df.loc[icnt-1,['cwbili']]=m_cw.allamt()/100000.0
+        df.loc[icnt-1,['pricebili']]=float(df.loc[icnt-1]['close'])/float(df.loc[30]['close'])
     return
-def show_canbuy_code(date):
-    db = m_db2()
-    return db.get_can_buy_code(date)
-def mail_stock(strtime):
-    strstr=''
-    if '' == strtime :
-        enddate = datetime.date.today()
-    else :
-        enddate = datetime.datetime.strptime(strtime,'%Y-%m-%d')
-#    enddate = datetime.date.today() #+ datetime.timedelta(days=1)
-    try:
-        df = show_canbuy_code(enddate.strftime('%Y-%m-%d'))
-    except Exception as e:
-        print('ERR:',e)
-    strstr=enddate.strftime('%Y-%m-%d')+'\ntotal:'+str(len(df))+'\n'
-    if len(df) != 0 :
-        for ind in df.index:
-            strstr+=df.loc[ind]['code']+"\n"
-    print(strstr)
-    m_smtp.smtp_send(strstr)
-    m_smtp.smtp_send_test('weijin@cupdata.com.cn','jinwei1992','smtp.ym.163.com', strstr)
 
+#最近三天有金叉
+def in3dHasMacdBuyFlag(df,daycnt):
+    today = daycnt
+    yestoday = daycnt - 1
+    i_2DAgo = daycnt - 2
+    i_3DAgo = daycnt - 3
+    if daycnt < 30:
+        return 0
+    if df.loc[today]['diff']>df.loc[today]['dea'] and df.loc[yestoday]['diff']<df.loc[yestoday]['dea']:
+        return 1
+    if df.loc[yestoday]['diff'] > df.loc[yestoday]['dea'] and df.loc[i_2DAgo]['diff'] < df.loc[i_2DAgo]['dea']:
+        return 1
+    if df.loc[i_2DAgo]['diff'] > df.loc[i_2DAgo]['dea'] and df.loc[i_3DAgo]['diff'] < df.loc[i_3DAgo]['dea']:
+        return 1
+    return 0
+#最近三天死叉
+def in3dHasMacdSaleFlag(df,daycnt):
+    today = daycnt
+    yestoday = daycnt - 1
+    i_2DAgo = daycnt - 2
+    i_3DAgo = daycnt - 3
+    if daycnt < 30:
+        return 0
+    if df.loc[today]['diff']<df.loc[today]['dea'] and df.loc[yestoday]['diff']>df.loc[yestoday]['dea']:
+        return 1
+    if df.loc[yestoday]['diff'] < df.loc[yestoday]['dea'] and df.loc[i_2DAgo]['diff'] > df.loc[i_2DAgo]['dea']:
+        return 1
+    if df.loc[i_2DAgo]['diff'] < df.loc[i_2DAgo]['dea'] and df.loc[i_3DAgo]['diff'] > df.loc[i_3DAgo]['dea']:
+        return 1
+    return 0
+#大盘创20日新低
+def in20DhszshHasSaleFlag(df,daycnt):
+    if float(df.loc[daycnt]['close'])< \
+        float(df[daycnt-20:daycnt]['close'].values.astype('double').min()):
+        return 1
+    return 0
+#diff连续三天升高
+def diffup3days(df,daycnt):
+    if df.loc[daycnt]['diff'] > df.loc[daycnt-1]['diff'] and df.loc[daycnt-1]['diff']>df.loc[daycnt-2]['diff'] \
+            and df.loc[daycnt]['macd'] > 4 * df.loc[daycnt - 2]['macd'] / 3 and df.loc[daycnt - 2]['macd']>0:
+        return 1
+    return 0
+#diff连续三天下降
+def diffdown3days(df,daycnt):
+    if df.loc[daycnt]['diff'] < df.loc[daycnt-1]['diff'] \
+            and df.loc[daycnt-1]['diff']<df.loc[daycnt-2]['diff']:
+         #   and df.loc[daycnt]['diff']>4*df.loc[daycnt-2]['diff']/3:
+        return 1
+    return 0
+#60日线拐头向上
+def ma60up(df,daycnt):
+    if df.loc[daycnt]['MA60'] < df.loc[daycnt - 1]['MA60'] \
+            and df.loc[daycnt - 1]['MA60'] < df.loc[daycnt - 2]['MA60']:
+        return 1
+    return 0
+
+db = m_db2()
 
 #补全历史数据 day
 #data_complete()
@@ -120,7 +145,18 @@ def mail_stock(strtime):
 #买卖操作
 run()
 
+m_cw.cw_print()
+plt.plot(df.index,df['cwbili'])
+plt.plot(df.index,df['pricebili'])
+plt.show()
+#打印仓位
 
-#run('2016-12-28')
-# run('')
-# mail_stock('')
+# code = '603800'
+# df = pre_data(code, ktype='D')
+# print(df[0:3]['close'])
+# print(df.loc[3]['close'])
+# print(df[0:3]['close'].values.astype('double').min())
+# print(float(df[0:3]['close'].values.astype('double').min()) >  float(df.loc[3]['close']))
+
+
+
