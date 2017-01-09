@@ -4,7 +4,8 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
 import configparser
-
+import datetime
+import talib as ta
 
 class m_db2:
     cur = ''
@@ -12,8 +13,8 @@ class m_db2:
     engine = ''
     def __init__(self):
         cf = configparser.ConfigParser()
-        cf.read('/home/lgy/PycharmProjects/Stock/stock.init')
-        #cf.read('stock.init')
+        # cf.read('/home/lgy/PycharmProjects/Stock/stock.init')
+        cf.read('stock.init')
         usr = cf.get('db','db_user')
         pwd = cf.get('db', 'db_pass')
         # self.engine = create_engine('mysql://root:root@127.0.0.1/gupiao?charset=utf8')
@@ -122,7 +123,7 @@ class m_db2:
         try:
             sqlstr=" select a.code,pe,totals \
                 from t_all_stickcode a  \
-                where   pe>5 and pe<200 and a.totals  < 10  and timetomarket < 20140901;"
+                where   pe>5 and pe<200 and a.totals  < 10 and pe>5 and pe<200 and timetomarket < 20140901;"
             #print(sqlstr)
             self.cur.execute(sqlstr)
             df = pd.DataFrame(np.array(self.cur.fetchall()), columns=['code', 'pe', 'totals'])
@@ -130,7 +131,52 @@ class m_db2:
             print('Err:', e)
             return None
         return df
+
+    def pre_data(self,stick_code, ktype='D', beginday='',endday=''):
+        # ktype in ('D','W','M')
+        # today='2010-01-01'
+        if '' == beginday:
+            begindaytmp = datetime.date.today() - datetime.timedelta(days=13)
+            beginday = begindaytmp.strftime('%Y-%m-%d')
+        if '' == endday:
+            endday = datetime.date.today().strftime('%Y-%m-%d')
+
+        df =''
+        print(beginday,endday)
+        try:
+            if ktype == 'D':
+                df = self.get_data(
+                    "select * from t_stick_data_d \
+                    where code = '" + stick_code + "'  and date > '"+beginday+"' \
+                    and date <='" + endday + "' order by date asc;")  # and date>'2015-05-01'
+            elif ktype == 'W':
+                df = self.get_data(
+                    "select * from t_stick_data_w \
+                    where code = '" + stick_code + "'  and date > '"+beginday+"' \
+                    and date <='" + endday + "' order by date asc;")  # and date>'2015-05-01'
+            elif ktype == 'M':
+                df = self.get_data(
+                    "select * from t_stick_data_m \
+                    where code = '" + stick_code + "'  and date > '"+beginday+"' \
+                    and date <='" + endday + "' order by date asc;")  # and date>'2015-05-01'
+
+        except Exception as e:
+            # print('ERR:',e)
+            return
+        df['cci'] = ta.CCI(df['high'].values.astype('double'), df['low'].values.astype('double'),
+                           df['close'].values.astype('double'))
+        df['diff'], df['dea'], df['macd'] = ta.MACD(df['close'].values.astype('double'), fastperiod=12, slowperiod=26,
+                                                    signalperiod=9)
+        df['obv'] = ta.OBV(df['close'].values.astype('double'), df['vol'].values.astype('double'))
+        df['volma5'] = ta.MA(df['vol'].values.astype('double'), 5);
+        df['volma20'] = ta.MA(df['vol'].values.astype('double'), 20);
+        df['MA20'] = ta.MA(df['close'].values.astype('double'), 20)
+        df['MA60'] = ta.MA(df['close'].values.astype('double'), 60)
+        df['cwbili'] = 0
+        df['pricebili'] = 0
+        return df
 # xx=m_db2();
-# df=xx.get_test()
+# df=xx.pre_data('000157',ktype='W')
+# print(df)
 # xx.insert_data('t_stick_data_m_test',df.head(20).as_matrix())
 # xx.commit()

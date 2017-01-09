@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import talib as ta
 from m_db import m_db2
+import datetime
 #import seaborn as sns
 v_hasbuy_f = 0
 v_code_f = 0
@@ -101,22 +102,26 @@ def get_canBuy_code(type):
         df = pre_data(code[0],'W')
         control(df)
     return
-def saveimg(df):
+def saveimg(df,dfw,date):
 
     fig = plt.figure()
-    ax1 = plt.subplot(511) # 在图表2中创建子图1
-    ax2 = plt.subplot(512) # 在图表2中创建子图2
-    ax3 = plt.subplot(513)  # 在图表2中创建子图2
-    ax4 = plt.subplot(514)  # 在图表2中创建子图2
-    ax5 = plt.subplot(515)  # 在图表2中创建子图2
-    lendf = len(df)
+    ax1 = plt.subplot(211) # 在图表2中创建子图1
+    ax2 = plt.subplot(212)  # 在图表2中创建子图1
+    # ax1 = plt.subplot(511) # 在图表2中创建子图1
+    # ax2 = plt.subplot(512) # 在图表2中创建子图2
+    # ax3 = plt.subplot(513)  # 在图表2中创建子图2
+    # ax4 = plt.subplot(514)  # 在图表2中创建子图2
+    # ax5 = plt.subplot(515)  # 在图表2中创建子图2
+
+    try:
+        lendf = len(df)
+    except Exception as e:
+        return
     maxvol = df['vol'].max()
     minprice = df['low'].min()
-
     beginindex = df.index.values[0]
     for i in range(lendf):
         df.index.values[i] -= beginindex;
-
     plt.sca(ax1)
     for i in df.index.values:
 
@@ -124,41 +129,59 @@ def saveimg(df):
             color = 'red'
         else:
             color = 'green'
-        # vol = (float(df.loc[i]['vol']) / float(maxvol)) * float(minprice) / 4
-        # plt.vlines(i, '0', str(vol), linewidth=5, colors='black')
         plt.vlines(i, df.loc[i]['low'], df.loc[i]['high'], linewidth=1,colors=color)
         plt.vlines(i, df.loc[i]['open'], df.loc[i]['close'], linewidth=5, colors=color)
-    # plt.plot(df.index,df['volma5']/float(maxvol)*float(minprice)/2)
-    # plt.plot(df.index, df['volma20']/float(maxvol)*float(minprice)/2)
     plt.ylabel(df.loc[df.index.values[0]]['code'])
 
+    df = dfw
+    try:
+        lendf = len(df)
+    except Exception as e:
+        return
+    maxvol = df['vol'].max()
+    minprice = df['low'].min()
+    beginindex = df.index.values[0]
+    for i in range(lendf):
+        df.index.values[i] -= beginindex;
     plt.sca(ax2)
-    #plt.plot(df.index, df['diff'])
-    plt.plot(df.index, df['dea'])
-    plt.plot(df.index, df['macd'])
-    plt.hlines(0, 0, len(df) - 1)
-    plt.ylabel('macd')
+    for i in df.index.values:
 
-    plt.sca(ax3)
-    #vol = (float(df.loc[i]['vol']) / float(maxvol)) * float(minprice) / 4
-    plt.vlines(df.index, '0', df['vol'], linewidth=5, colors='black')
-    plt.plot(df.index,df['volma5'])
-    plt.plot(df.index, df['volma20'])
-    plt.ylabel('vol')
+        if df.loc[i]['open']<=df.loc[i]['close']:
+            color = 'red'
+        else:
+            color = 'green'
+        plt.vlines(i, df.loc[i]['low'], df.loc[i]['high'], linewidth=1,colors=color)
+        plt.vlines(i, df.loc[i]['open'], df.loc[i]['close'], linewidth=5, colors=color)
+    plt.ylabel(df.loc[df.index.values[0]]['code'])
 
-    plt.sca(ax4)
-    plt.plot(df.index,df['cci'])
-    plt.hlines(100,0,len(df)-1)
-    plt.hlines(-100, 0, len(df)-1)
-    plt.ylabel('cci')
+    # plt.sca(ax2)
+    # #plt.plot(df.index, df['diff'])
+    # plt.plot(df.index, df['dea'])
+    # plt.plot(df.index, df['macd'])
+    # plt.hlines(0, 0, len(df) - 1)
+    # plt.ylabel('macd')
+    #
+    # plt.sca(ax3)
+    # #vol = (float(df.loc[i]['vol']) / float(maxvol)) * float(minprice) / 4
+    # plt.vlines(df.index, '0', df['vol'], linewidth=5, colors='black')
+    # plt.plot(df.index,df['volma5'])
+    # plt.plot(df.index, df['volma20'])
+    # plt.ylabel('vol')
+    #
+    # plt.sca(ax4)
+    # plt.plot(df.index,df['cci'])
+    # plt.hlines(100,0,len(df)-1)
+    # plt.hlines(-100, 0, len(df)-1)
+    # plt.ylabel('cci')
+    #
+    # plt.sca(ax5)
+    # plt.plot(df.index,df['obv'])
+    # plt.ylabel('obv')
 
-    plt.sca(ax5)
-    plt.plot(df.index,df['obv'])
-    plt.ylabel('obv')
-
-    plt.savefig('./img'+df.loc[df.index.values[0]]['code']+' '+df.loc[df.index.values[0]]['date']+'.png')
+    plt.savefig('/Users/lgy/PycharmProjects/img/'+df.loc[df.index.values[0]]['code']+' '+df.loc[df.index.values[0]]['date']+date+'.png')
     #plt.close()
-    plt.show()
+    #plt.show()
+    plt.close('all')
     return
 def trade(df,trandtype=''):
     global v_hasbuy_f
@@ -195,7 +218,17 @@ def show_canbuy_code(date):
 #     print('code:',code)
 #     df = pre_data(code)
 #     drawkline(df)
-
+def drawDayWeek(code,date,duadays,ktype='D'):
+    # code=xxxx date=YYYY-MM-DD
+    db = m_db2()
+    beginday=datetime.datetime.strptime(date,'%Y-%m-%d')
+    endday=beginday + datetime.timedelta(days=duadays)
+    beforday=beginday - datetime.timedelta(days=9)
+    befordayW = beginday - datetime.timedelta(days=400)
+    df = db.pre_data(code,beginday=beforday.strftime('%Y-%m-%d'),endday=endday.strftime('%Y-%m-%d'),ktype=ktype)
+    dfw = db.pre_data(code,beginday=befordayW.strftime('%Y-%m-%d'),endday=beforday.strftime('%Y-%m-%d'),ktype='W')
+    saveimg(df,dfw,date)
+    return
 # df = pre_data('600848')
 # drawkline(df)
 

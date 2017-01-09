@@ -16,7 +16,7 @@ class load:
     db = ''
     def __init__(self):
         cf = configparser.ConfigParser()
-        cf.read('/home/lgy/PycharmProjects/Stock/stock.init')
+        cf.read('stock.init')
         usr = cf.get('db','db_user')
         pwd = cf.get('db', 'db_pass')
         # self.engine = create_engine('mysql://root:root@127.0.0.1/gupiao?charset=utf8')
@@ -128,6 +128,25 @@ class load:
         rs = ts.get_k_data(code='600848',start='2013-01-01',end='2014-01-01',ktype='M')
         rs.to_sql('t_stick_data_m_test',self.engine,if_exists='replace',index=False);
         self.sqlconn.commit()
+        return
+    def data_complete(self,beginday='',endday='',ktype='D'):
+        if 'D' == ktype:
+            days = 2
+        if 'W' == ktype:
+            days = 13
+        if 'D' == ktype:
+            days = 31
+        if '' == beginday:
+            begindaytmp = datetime.date.today() - datetime.timedelta(days=days)
+            beginday = begindaytmp.strftime('%Y-%m-%d')
+        if '' == endday:
+            endday = datetime.date.today().strftime('%Y-%m-%d')
+        if 'D' == ktype:
+            self.get_stick_hisdata_d(begin_date=beginday, end_date=endday)
+        if 'W' == ktype:
+            self.get_stick_hisdata_w(begin_date=beginday, end_date=endday)
+        if 'D' == ktype:
+            self.get_stick_hisdata_m(begin_date=beginday, end_date=endday)
         return
     def get_little_stock(self):
         self.cur.execute("select code from t_all_stickcode where liquidassets <  70000  and liquidassets >  60000 and (substr(code,1,1)='0' or substr(code,1,1)='6') ;")

@@ -90,6 +90,7 @@ def run(code,today):
     if 1==gapNotBeFillIn3days(df,dflen):
         # m_cw.buy(code, float(df.loc[icnt-1]['close']), 1)
         print('B :  ',today,code)
+        m_draw.drawDayWeek(code, today, 60, ktype='D')
         #用于画图
         # df.loc[icnt-1,['cwbili']]=m_cw.allamt()/100000.0
         # df.loc[icnt-1,['pricebili']]=float(df.loc[icnt-1]['close'])/float(df.loc[30]['close'])
@@ -257,10 +258,13 @@ def huice():
     return
 
 db = m_db2()
-huiCeMoniDay()
-#补全历史数据 day
-#data_complete()
+ld = load()
 
+#补全历史数据 day
+#ld.data_complete(beginday='2015-01-01',endday='2017-01-09',ktype='D')
+
+#m_draw.drawDayWeek('000672','2016-12-30',10,ktype='D')
+huiCeMoniDay()
 #获取优质小市值
 #df = db.getlittlestock('2016-12-13')
 
