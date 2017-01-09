@@ -12,8 +12,8 @@ class m_db2:
     engine = ''
     def __init__(self):
         cf = configparser.ConfigParser()
-        #cf.read('/home/lgy/PycharmProjects/Stock/stock.init')
-        cf.read('stock.init')
+        cf.read('/home/lgy/PycharmProjects/Stock/stock.init')
+        #cf.read('stock.init')
         usr = cf.get('db','db_user')
         pwd = cf.get('db', 'db_pass')
         # self.engine = create_engine('mysql://root:root@127.0.0.1/gupiao?charset=utf8')
@@ -73,7 +73,8 @@ class m_db2:
         try:
             self.cur.execute("select code from t_all_stickcode where liquidassets <  70000  and (substr(code,1,1)='0' or substr(code,1,1)='6');")
         except Exception as e:
-            print('err:',e)
+            #print('err:',e)
+            return pd.DataFrame(np.array(self.cur.fetchall()), columns=['code'])
         return pd.DataFrame(np.array(self.cur.fetchall()),columns=['code'])
     def delete_date(self,table,date,code):
         #print('dateeeeeeeeeeee',date)
@@ -115,6 +116,19 @@ class m_db2:
             df = pd.DataFrame(np.array(self.cur.fetchall()), columns=['code', 'pe', 'totals','close','totprice'])
         except Exception as e:
             print('Err:', e)
+        return df
+#获取小市值股票
+    def getXiaoShiZhiStock(self):
+        try:
+            sqlstr=" select a.code,pe,totals \
+                from t_all_stickcode a  \
+                where   pe>5 and pe<200 and a.totals  < 10  and timetomarket < 20140901;"
+            #print(sqlstr)
+            self.cur.execute(sqlstr)
+            df = pd.DataFrame(np.array(self.cur.fetchall()), columns=['code', 'pe', 'totals'])
+        except Exception as e:
+            print('Err:', e)
+            return None
         return df
 # xx=m_db2();
 # df=xx.get_test()
