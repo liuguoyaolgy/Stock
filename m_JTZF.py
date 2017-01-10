@@ -162,16 +162,21 @@ def dangWei(df,daycnt):
 #向下跳空三次 近一个月 连续下跌（5日线 < 10 日线）下降幅度大于40%
 def downGap3Times(df,daycnt):
     gapCnt = 0
-
-
-    return
+    for icnt in range(0,31):
+        if df.loc[daycnt-30+icnt]['low']>df.loc[daycnt-30+1+icnt]['high']:
+            gapCnt +=1
+    if gapCnt>=3:
+        return 1
+    return 0
 
 #连续下跌
 
 #近两个月 跌幅超过40%
 def down40percent(df,daycnt):
-
-    return
+    if df[daycnt - 30:daycnt]['low'].values.astype('double').min() \
+    < 0.6 * df[daycnt - 30:daycnt]['high'].values.astype('double').max():
+        return 1
+    return 0
 
 #双针探底
 
@@ -283,6 +288,7 @@ huiCeMoniDay()
 # print(df.loc[3]['close'])
 # print(df[0:3]['close'].values.astype('double').min())
 # print(float(df[0:3]['close'].values.astype('double').min()) >  float(df.loc[3]['close']))
+
 
 
 
