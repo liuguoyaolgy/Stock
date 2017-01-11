@@ -25,11 +25,11 @@ class g():
 #**************
 
 
-def data_complete():
-    # 补全day历史数据
-    ld = load()
-    # ld.get_stick_hisdata_d(begin_date='2014-01-01',end_date='2016-12-23')
-    ld.get_stick_hisdata_d(begin_date='2016-12-01', end_date='2016-12-23')
+# def data_complete():
+#     # 补全day历史数据
+#     ld = load()
+#     # ld.get_stick_hisdata_d(begin_date='2014-01-01',end_date='2016-12-23')
+#     ld.get_stick_hisdata_d(begin_date='2016-12-01', end_date='2016-12-23')
 
 def pre_data(stick_code,ktype='D',today=''):
     # ktype in ('D','W','M')
@@ -87,7 +87,7 @@ def run(code,today):
         #     print('S:',df.loc[icnt-1]['date'],m_cw.allamt())
         #buy
     #if 1==upGap2Times(df,dflen):
-    if 1==gapNotBeFillIn3days(df,dflen):
+    if 1==gapNotBeFillIn3days(df,dflen) and 1==downGap3Times(df,dflen):
         # m_cw.buy(code, float(df.loc[icnt-1]['close']), 1)
         print('B :  ',today,code)
         m_draw.drawDayWeek(code, today, 60, ktype='D')
@@ -161,8 +161,10 @@ def dangWei(df,daycnt):
 
 #向下跳空三次 近一个月 连续下跌（5日线 < 10 日线）下降幅度大于40%
 def downGap3Times(df,daycnt):
+    if daycnt < 30 :
+        return 0
     gapCnt = 0
-    for icnt in range(0,31):
+    for icnt in range(0,30):
         if df.loc[daycnt-30+icnt]['low']>df.loc[daycnt-30+1+icnt]['high']:
             gapCnt +=1
     if gapCnt>=3:
@@ -191,8 +193,11 @@ def upGap2Times(df,daycnt):
 
 #缺口三天不补 买
 def gapNotBeFillIn3days(df,daycnt):
-    if df[daycnt-2:daycnt]['low'].values.astype('double').min() > float(df.loc[daycnt-3]['high']):
-        print('min:',df[daycnt-2:daycnt]['low'].values.astype('double').min(),'high:',df.loc[daycnt-3]['high'])
+    if df[daycnt-2:daycnt+1]['low'].values.astype('double').min() > float(df.loc[daycnt-3]['high'])\
+            and float(df.loc[daycnt]['close'])<1.04*float(df.loc[daycnt-3]['high'])\
+            and df[daycnt-1:daycnt+1]['high'].values.astype('double').max()<float(df.loc[daycnt-2]['close'])\
+            and float(df.loc[daycnt-3]['high'])>1.06*float(df.loc[daycnt-3]['low']) :
+        #print('min:',df[daycnt-2:daycnt]['low'].values.astype('double').min(),'high:',df.loc[daycnt-3]['high'])
         return 1
     return 0
 
@@ -270,6 +275,7 @@ ld = load()
 
 #m_draw.drawDayWeek('000672','2016-12-30',10,ktype='D')
 huiCeMoniDay()
+
 #获取优质小市值
 #df = db.getlittlestock('2016-12-13')
 
