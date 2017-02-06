@@ -1,3 +1,4 @@
+# 酒田战法
 import tushare as ts
 from m_load_update_data import load
 import m_draw
@@ -205,7 +206,12 @@ def gapNotBeFillIn3days(df,daycnt):
 
 #法7 下切线 买
 def F7_xiaQieXian(df,daycnt):
-
+    if df[daycnt-2:daycnt+1]['low'].values.astype('double').min() > float(df.loc[daycnt-3]['high'])\
+            and float(df.loc[daycnt]['close'])<1.04*float(df.loc[daycnt-3]['high'])\
+            and df[daycnt-1:daycnt+1]['high'].values.astype('double').max()<float(df.loc[daycnt-2]['close'])\
+            and float(df.loc[daycnt-3]['high'])>1.06*float(df.loc[daycnt-3]['low']) :
+        #print('min:',df[daycnt-2:daycnt]['low'].values.astype('double').min(),'high:',df.loc[daycnt-3]['high'])
+        return 1
     return
 
 #法10 怀抱线 买
@@ -248,6 +254,11 @@ def F63_qingTianYiZhu(df,daycnt):
     return
 
 #法65 锅底 买
+
+#w底部
+def W_bottom(df,daycnt):
+
+    return
 
 
 #回测 每天回测所有股票
