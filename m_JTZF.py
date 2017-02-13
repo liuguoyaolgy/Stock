@@ -56,9 +56,16 @@ def pre_data(stick_code,ktype='D',today=''):
     df['diff'],df['dea'],df['macd'] = ta.MACD(df['close'].values.astype('double'),fastperiod=12, slowperiod=26, signalperiod=9)
     df['obv'] = ta.OBV(df['close'].values.astype('double'),df['vol'].values.astype('double'))
     df['volma5']=ta.MA(df['vol'].values.astype('double'),5);
+    df['volma13'] = ta.MA(df['vol'].values.astype('double'), 13);
     df['volma20'] = ta.MA(df['vol'].values.astype('double'), 20);
+    df['volma34'] = ta.MA(df['vol'].values.astype('double'), 34);
     df['MA20'] = ta.MA(df['close'].values.astype('double'), 20)
     df['MA60'] = ta.MA(df['close'].values.astype('double'), 60)
+    df['MA5'] = ta.MA(df['close'].values.astype('double'), 5)
+    df['MA13'] = ta.MA(df['close'].values.astype('double'), 13)
+    df['MA34'] = ta.MA(df['close'].values.astype('double'), 34)
+    df['MA89'] = ta.MA(df['close'].values.astype('double'), 89)
+    df['MA144'] = ta.MA(df['close'].values.astype('double'), 144)
     df['cwbili']=0
     df['pricebili']=0
     return   df
@@ -97,6 +104,70 @@ def run(code,today):
         # df.loc[icnt-1,['pricebili']]=float(df.loc[icnt-1]['close'])/float(df.loc[30]['close'])
     return
 
+# draw
+def run2(code,today):
+    #601999
+    #600485
+    #601011
+    #code = '600706'
+    #print(code,today)
+    df = pre_data(code, ktype='D',today=today)
+    try:
+        dflen = len(df)-1
+        #print(dflen)
+        if dflen<10:
+            return
+    except Exception as e:
+        #print(e)
+        return
+    if 1==in5dHasMacdBuyFlag(df,dflen) and 1==vol_canbuyflag(df,dflen) and price_canbuyflag(df,dflen):
+        # m_cw.buy(code, float(df.loc[icnt-1]['close']), 1)
+        print('B :  ',today,code)
+        m_draw.drawDayWeek(code, today, 60, ktype='D')
+        #用于画图
+        # df.loc[icnt-1,['cwbili']]=m_cw.allamt()/100000.0
+        # df.loc[icnt-1,['pricebili']]=float(df.loc[icnt-1]['close'])/float(df.loc[30]['close'])
+    return
+#最5天有金叉
+def in5dHasMacdBuyFlag(df,daycnt):
+    today = daycnt
+    yestoday = daycnt - 1
+    i_2DAgo = daycnt - 2
+    i_3DAgo = daycnt - 3
+    i_4DAgo = daycnt - 4
+    i_5DAgo = daycnt - 5
+    if daycnt < 30:
+        return 0
+    if df.loc[today]['MA5']>df.loc[today]['MA13'] and df.loc[yestoday]['MA5']<df.loc[yestoday]['MA13']:
+        return 1
+    if df.loc[yestoday]['MA5'] > df.loc[yestoday]['MA13'] and df.loc[i_2DAgo]['MA5'] < df.loc[i_2DAgo]['MA13']:
+        return 1
+    if df.loc[i_2DAgo]['MA5'] > df.loc[i_2DAgo]['MA13'] and df.loc[i_3DAgo]['MA5'] < df.loc[i_3DAgo]['MA13']:
+        return 1
+    if df.loc[i_3DAgo]['MA5'] > df.loc[i_3DAgo]['MA13'] and df.loc[i_4DAgo]['MA5'] < df.loc[i_4DAgo]['MA13']:
+        return 1
+    if df.loc[i_4DAgo]['MA5'] > df.loc[i_4DAgo]['MA13'] and df.loc[i_5DAgo]['MA5'] < df.loc[i_5DAgo]['MA13']:
+        return 1
+    return 0
+def vol_canbuyflag(df,daycnt):
+    today = daycnt
+    if df.loc[today]['volma5']>1.4*df.loc[today]['volma13'] \
+        and df.loc[today]['volma5']>1.3*df.loc[today]['volma34'] \
+        and df.loc[today]['volma13']>df.loc[today]['volma34'] :
+            return 1
+    return 0
+def price_canbuyflag(df,daycnt):
+    today = daycnt
+    if df.loc[today]['MA5'] >  df.loc[today]['MA13'] \
+        and df.loc[today]['MA13'] > df.loc[today]['MA34'] \
+        and df.loc[today]['MA5'] > df.loc[today]['MA89'] \
+        and df.loc[today]['MA5'] > df.loc[today]['MA144'] \
+        and float(df.loc[today]['close'])*0.9 < df.loc[today]['MA89'] \
+        and float(df.loc[today]['close'])*0.9 < df.loc[today]['MA144'] \
+        and float(df.loc[today]['open'])*0.99 > float(df.loc[today]['close']):
+        return 1
+
+    return 0
 #最近三天有金叉
 def in3dHasMacdBuyFlag(df,daycnt):
     today = daycnt
@@ -270,7 +341,8 @@ def huiCeMoniDay():
         print(time.asctime( time.localtime(time.time()) ),'currentday:',currentday)
         coderslt = db.getXiaoShiZhiStock()
         for code in coderslt['code']:
-            run(code,strcurrentday)
+         #   run(code,strcurrentday)
+            run2(code,strcurrentday)
 
     return
 #回测 指定时间段回测所有股票 不采取
