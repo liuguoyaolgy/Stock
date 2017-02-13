@@ -120,7 +120,8 @@ def run2(code,today):
     except Exception as e:
         #print(e)
         return
-    if 1==in5dHasMacdBuyFlag(df,dflen) and 1==vol_canbuyflag(df,dflen) and price_canbuyflag(df,dflen):
+    if 1==in5dHasMacdBuyFlag(df,dflen) and 1==vol_canbuyflag(df,dflen) and price_canbuyflag(df,dflen) \
+            and price_up16per(df,dflen) == 1:
         # m_cw.buy(code, float(df.loc[icnt-1]['close']), 1)
         print('B :  ',today,code)
         m_draw.drawDayWeek(code, today, 60, ktype='D')
@@ -128,6 +129,20 @@ def run2(code,today):
         # df.loc[icnt-1,['cwbili']]=m_cw.allamt()/100000.0
         # df.loc[icnt-1,['pricebili']]=float(df.loc[icnt-1]['close'])/float(df.loc[30]['close'])
     return
+#最近5天 有连续两天涨幅大于16%
+def price_up16per(df,daycnt):
+    today = daycnt
+    i_1DAgo = daycnt - 1
+    i_2DAgo = daycnt - 2
+    i_3DAgo = daycnt - 3
+    i_4DAgo = daycnt - 4
+    i_5DAgo = daycnt - 5
+    if float(df.loc[i_2DAgo]['close']) * 1.16 < float(df.loc[today]['close'] ) \
+        or float(df.loc[i_3DAgo]['close']) * 1.16 < float(df.loc[i_1DAgo]['close'] ) \
+        or float(df.loc[i_4DAgo]['close']) * 1.16 < float(df.loc[i_2DAgo]['close'] ) \
+        or float(df.loc[i_5DAgo]['close']) * 1.16 < float(df.loc[i_3DAgo]['close'] ) :
+        return 1
+    return 0
 #最5天有金叉
 def in5dHasMacdBuyFlag(df,daycnt):
     today = daycnt
@@ -151,8 +166,7 @@ def in5dHasMacdBuyFlag(df,daycnt):
     return 0
 def vol_canbuyflag(df,daycnt):
     today = daycnt
-    if df.loc[today]['volma5']>1.4*df.loc[today]['volma13'] \
-        and df.loc[today]['volma5']>1.3*df.loc[today]['volma34'] \
+    if df.loc[today]['volma5']>1.8*df.loc[today]['volma34'] \
         and df.loc[today]['volma13']>df.loc[today]['volma34'] :
             return 1
     return 0
