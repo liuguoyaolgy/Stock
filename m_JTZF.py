@@ -400,18 +400,20 @@ def runtoday():
         run2(code, strcurrentday)
     return
 
-db = m_db2()
-ld = load()
+################################
+def m_run():
+    db = m_db2()
+    ld = load()
 
 #补全历史数据 day
 #ld.data_complete(beginday='2015-06-01',endday='2017-02-14',ktype='D')
-enddate = datetime.date.today()
-begindate = datetime.date.today() - datetime.timedelta(days=7)
-ld.data_complete(beginday=begindate.strftime('%Y-%m-%d'),endday=enddate.strftime('%Y-%m-%d'),ktype='D')
+    enddate = datetime.date.today()
+    begindate = datetime.date.today() - datetime.timedelta(days=7)
+    ld.data_complete(beginday=begindate.strftime('%Y-%m-%d'),endday=enddate.strftime('%Y-%m-%d'),ktype='D')
 
 #m_draw.drawDayWeek('000672','2016-12-30',10,ktype='D')
 #huiCeMoniDay()
-runtoday()
+    runtoday()
 
 #获取优质小市值
 #df = db.getlittlestock('2016-12-13')
@@ -431,6 +433,7 @@ runtoday()
 # print(df.loc[3]['close'])
 # print(df[0:3]['close'].values.astype('double').min())
 # print(float(df[0:3]['close'].values.astype('double').min()) >  float(df.loc[3]['close']))
+
 
 
 

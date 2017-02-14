@@ -5,6 +5,7 @@ from m_load_update_data import load
 import m_draw
 from m_db import m_db2
 import tushare as ts
+import m_JTZF
 
 def run(strtime):
     #refresh database
@@ -57,5 +58,8 @@ def mail_stock(strtime):
     m_smtp.smtp_send(strstr)
     m_smtp.smtp_send_test('weijin@cupdata.com.cn','jinwei1992','smtp.ym.163.com', strstr)
 #run('2016-12-28')
+
+#########################################
+m_JTZF.m_run()
 run('')
 mail_stock('')
