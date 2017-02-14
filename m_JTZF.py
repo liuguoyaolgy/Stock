@@ -120,11 +120,11 @@ def run2(code,today):
     except Exception as e:
         #print(e)
         return
-    if 1==in5dHasMacdBuyFlag(df,dflen) and 1==vol_canbuyflag(df,dflen) and price_canbuyflag(df,dflen) \
-            and price_up16per(df,dflen) == 1:
+    if 1==in5dHasMacdBuyFlag(df,dflen) and 1==vol_canbuyflag(df,dflen) and 1==price_canbuyflag(df,dflen) :
+ #           and price_up16per(df,dflen) == 1:
         # m_cw.buy(code, float(df.loc[icnt-1]['close']), 1)
         print('B :  ',today,code)
-        m_draw.drawDayWeek(code, today, 60, ktype='D')
+        #m_draw.drawDayWeek(code, today, 60, ktype='D')
         #用于画图
         # df.loc[icnt-1,['cwbili']]=m_cw.allamt()/100000.0
         # df.loc[icnt-1,['pricebili']]=float(df.loc[icnt-1]['close'])/float(df.loc[30]['close'])
@@ -137,10 +137,10 @@ def price_up16per(df,daycnt):
     i_3DAgo = daycnt - 3
     i_4DAgo = daycnt - 4
     i_5DAgo = daycnt - 5
-    if float(df.loc[i_2DAgo]['close']) * 1.16 < float(df.loc[today]['close'] ) \
-        or float(df.loc[i_3DAgo]['close']) * 1.16 < float(df.loc[i_1DAgo]['close'] ) \
-        or float(df.loc[i_4DAgo]['close']) * 1.16 < float(df.loc[i_2DAgo]['close'] ) \
-        or float(df.loc[i_5DAgo]['close']) * 1.16 < float(df.loc[i_3DAgo]['close'] ) :
+    if float(df.loc[i_2DAgo]['close']) * 1.11 < float(df.loc[today]['close'] ) \
+        or float(df.loc[i_3DAgo]['close']) * 1.11 < float(df.loc[i_1DAgo]['close'] ) \
+        or float(df.loc[i_4DAgo]['close']) * 1.11 < float(df.loc[i_2DAgo]['close'] ) \
+        or float(df.loc[i_5DAgo]['close']) * 1.11 < float(df.loc[i_3DAgo]['close'] ) :
         return 1
     return 0
 #最5天有金叉
@@ -349,8 +349,8 @@ def W_bottom(df,daycnt):
 #回测 每天回测所有股票
 def huiCeMoniDay():
     #近一年回测
-    for cnt in range(1,152):
-        currentday = datetime.date.today() - datetime.timedelta(days=152-cnt)
+    for cnt in range(1,30):
+        currentday = datetime.date.today() - datetime.timedelta(days=30-cnt)
         strcurrentday = currentday.strftime('%Y-%m-%d')
         print(time.asctime( time.localtime(time.time()) ),'currentday:',currentday)
         coderslt = db.getXiaoShiZhiStock()
@@ -363,15 +363,25 @@ def huiCeMoniDay():
 def huice():
 
     return
+def runtoday():
+    currentday = datetime.date.today()
+    strcurrentday = currentday.strftime('%Y-%m-%d')
+    print(time.asctime(time.localtime(time.time())), 'currentday:', currentday)
+    coderslt = db.getXiaoShiZhiStock()
+    for code in coderslt['code']:
+        #   run(code,strcurrentday)
+        run2(code, strcurrentday)
+    return
 
 db = m_db2()
 ld = load()
 
 #补全历史数据 day
-#ld.data_complete(beginday='2015-01-01',endday='2017-01-09',ktype='D')
+#ld.data_complete(beginday='2016-12-23',endday='2017-02-14',ktype='D')
 
 #m_draw.drawDayWeek('000672','2016-12-30',10,ktype='D')
 huiCeMoniDay()
+#runtoday()
 
 #获取优质小市值
 #df = db.getlittlestock('2016-12-13')
