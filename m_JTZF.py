@@ -124,11 +124,38 @@ def run2(code,today):
  #           and price_up16per(df,dflen) == 1:
         # m_cw.buy(code, float(df.loc[icnt-1]['close']), 1)
         print('B :  ',today,code)
+        try:
+            db.insert_can_buy_code(today, code, '2')
+            db.commit()
+        except Exception as e:
+            print('ERR:', e)
+    if 1==red_up_throw3MAline(df,dflen):
+        print('B :  ',today,code)
+        try:
+            db.insert_can_buy_code(today, code, '3')
+            db.commit()
+        except Exception as e:
+            print('ERR:', e)
         #m_draw.drawDayWeek(code, today, 60, ktype='D')
         #用于画图
         # df.loc[icnt-1,['cwbili']]=m_cw.allamt()/100000.0
         # df.loc[icnt-1,['pricebili']]=float(df.loc[icnt-1]['close'])/float(df.loc[30]['close'])
+
     return
+#一阳穿三线
+def red_up_throw3MAline(df,daycnt):
+    today = daycnt
+    if float(df.loc[today]['close'])>float(df.loc[today]['MA5']) \
+        and float(df.loc[today]['close'])>float(df.loc[today]['MA13']) \
+        and float(df.loc[today]['close'])>float(df.loc[today]['MA34']) \
+        and float(df.loc[today]['close'])>float(df.loc[today]['MA89']) \
+        and float(df.loc[today]['open']) < float(df.loc[today]['MA5']) \
+        and float(df.loc[today]['open']) < float(df.loc[today]['MA13']) \
+        and float(df.loc[today]['open']) < float(df.loc[today]['MA34']) \
+        and float(df.loc[today]['open']) < float(df.loc[today]['MA89']) \
+        and float(df.loc[today]['close'])>1.08*float(df.loc[today]['open']):
+        return 1
+    return 0
 #最近5天 有连续两天涨幅大于16%
 def price_up16per(df,daycnt):
     today = daycnt
@@ -377,11 +404,14 @@ db = m_db2()
 ld = load()
 
 #补全历史数据 day
-#ld.data_complete(beginday='2016-12-23',endday='2017-02-14',ktype='D')
+#ld.data_complete(beginday='2015-06-01',endday='2017-02-14',ktype='D')
+enddate = datetime.date.today()
+begindate = datetime.date.today() - datetime.timedelta(days=7)
+ld.data_complete(beginday=begindate.strftime('%Y-%m-%d'),endday=enddate.strftime('%Y-%m-%d'),ktype='D')
 
 #m_draw.drawDayWeek('000672','2016-12-30',10,ktype='D')
-huiCeMoniDay()
-#runtoday()
+#huiCeMoniDay()
+runtoday()
 
 #获取优质小市值
 #df = db.getlittlestock('2016-12-13')

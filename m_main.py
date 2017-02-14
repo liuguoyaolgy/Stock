@@ -52,7 +52,7 @@ def mail_stock(strtime):
     strstr=enddate.strftime('%Y-%m-%d')+'\ntotal:'+str(len(df))+'\n'
     if len(df) != 0 :
         for ind in df.index:
-            strstr+=df.loc[ind]['code']+"\n"
+            strstr+=df.loc[ind]['code']+' '+df.loc[ind]['buytype']+"\n"
     print(strstr)
     m_smtp.smtp_send(strstr)
     m_smtp.smtp_send_test('weijin@cupdata.com.cn','jinwei1992','smtp.ym.163.com', strstr)
