@@ -401,9 +401,9 @@ def runtoday():
     return
 
 ################################
+db = m_db2()
+ld = load()
 def m_run():
-    db = m_db2()
-    ld = load()
 
 #补全历史数据 day
 #ld.data_complete(beginday='2015-06-01',endday='2017-02-14',ktype='D')

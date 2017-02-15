@@ -16,7 +16,8 @@ class load:
     db = ''
     def __init__(self):
         cf = configparser.ConfigParser()
-        cf.read('stock.init')
+        cf.read('/home/lgy/PycharmProjects/Stock/stock.init')
+        #cf.read('stock.init')
         usr = cf.get('db','db_user')
         pwd = cf.get('db', 'db_pass')
         # self.engine = create_engine('mysql://root:root@127.0.0.1/gupiao?charset=utf8')
@@ -103,7 +104,7 @@ class load:
     def get_stick_hisdata_m(self,begin_date,end_date):
 
         # cur.execute("select code,outstanding from t_all_stickcode where outstanding <  50000 and (substr(code,1,1)='0' or substr(code,1,1)='6'); ;")
-        self.cur.execute("select code,outstanding from t_all_stickcode a where not EXISTS (select * from t_stick_data_M where code = a.code);")
+        self.cur.execute("select code,outstanding from t_all_stickcode a where not EXISTS (select * from t_stick_data_d where code = a.code);")
         sqlrs = self.cur.fetchall();
         # self.cur.execute("delete from t_stick_data_m")
         self.sqlconn.commit()
