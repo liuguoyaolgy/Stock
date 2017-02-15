@@ -94,7 +94,7 @@ class m_db2:
     def get_can_buy_code(self,date):
         df = ''
         try:
-            self.cur.execute("select date,code,buytype from t_stick_canbuy where date='"+date+"';")
+            self.cur.execute("select date,code,buytype from t_stick_canbuy where date='"+date+"'order by buytype desc;")
         except Exception as e:
             print('err:',e)
         try:
