@@ -111,8 +111,8 @@ class load:
         for code in sqlrs:
             print(code[0] )
             rs = ts.get_k_data(code=code[0],start=begin_date,end=end_date,ktype='M')
-            self.db.delete_date('t_stick_data_M',end_date,code[0])
-            self.db.insert_data('t_stick_data_M',rs.as_matrix())
+            self.db.delete_date('t_stick_data_m',end_date,code[0])
+            self.db.insert_data('t_stick_data_m',rs.as_matrix())
             self.sqlconn.commit()
         return
     def get_stick_hisdata_add_m(self):
@@ -135,7 +135,7 @@ class load:
             days = 2
         if 'W' == ktype:
             days = 13
-        if 'D' == ktype:
+        if 'M' == ktype:
             days = 31
         if '' == beginday:
             begindaytmp = datetime.date.today() - datetime.timedelta(days=days)
@@ -146,7 +146,7 @@ class load:
             self.get_stick_hisdata_d(begin_date=beginday, end_date=endday)
         if 'W' == ktype:
             self.get_stick_hisdata_w(begin_date=beginday, end_date=endday)
-        if 'D' == ktype:
+        if 'M' == ktype:
             self.get_stick_hisdata_m(begin_date=beginday, end_date=endday)
         return
     def get_little_stock(self):
