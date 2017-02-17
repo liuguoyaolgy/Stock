@@ -136,6 +136,13 @@ def run2(code,today):
             db.commit()
         except Exception as e:
             print('ERR:', e)
+    if 1==F23_muZiXingTai(df,dflen):
+        print('B :  ', today, code)
+        try:
+            db.insert_can_buy_code(today, code, '4')
+            db.commit()
+        except Exception as e:
+            print('ERR:', e)
         #m_draw.drawDayWeek(code, today, 60, ktype='D')
         #用于画图
         # df.loc[icnt-1,['cwbili']]=m_cw.allamt()/100000.0
@@ -342,8 +349,19 @@ def F21_xiaZuXian(df,daycnt):
 
 #法23 母子形态 外孕十字星 成交量放大 翌日确认（高开收阳，成交量放大）
 def F23_muZiXingTai(df,daycnt):
-
-    return
+    today = daycnt
+    yestoday = daycnt - 1
+    i_2DAgo = daycnt - 2
+    i_3DAgo = daycnt - 3
+    if daycnt < 30:
+        return 0
+    if df.loc[today]['open']<df.loc[today]['close'] \
+            and float(df.loc[yestoday]['open'])>1.05*float(df.loc[yestoday]['close'])\
+            and float(df.loc[yestoday]['open'])>float(df.loc[today]['close'])\
+            and float(df.loc[yestoday]['close'])<float(df.loc[today]['open'])\
+            and float(df.loc[today]['vol'])>1.5*float(df.loc[yestoday]['vol']):
+        return 1
+    return 0
 
 #法41 红三兵 买
 
